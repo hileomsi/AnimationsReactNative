@@ -3,24 +3,18 @@ import React, { Component } from 'react';
 import {
   View,
   Text,
-  Animated,
+  Image,
   Platform,
   StatusBar,
   StyleSheet,
-  Dimensions,
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
 
 import User from './components/User';
 
-const { width } = Dimensions.get('window');
-
 export default class App extends Component {
   state = {
-    scrollOffset: new Animated.Value(0),
-    userImageProgress: new Animated.Value(0),
-    listProgress: new Animated.Value(0),
     userSelected: null,
     userInfoVisible: false,
     users: [
@@ -65,55 +59,21 @@ export default class App extends Component {
 
   selectUser = (user) => {
     this.setState({ userSelected: user });
-
-    this._scrollView.scrollTo({x: 0, y: 0, animated: true});
-
-    Animated.sequence([
-      Animated.timing(this.state.listProgress, {
-        toValue: 100,
-        duration: 300,
-      }),
-      Animated.timing(this.state.userImageProgress, {
-        toValue: 100,
-        duration: 500,
-      }),
-    ]).start(() => {
-      this.setState({ userInfoVisible: true });
-    });
+    this.setState({ userInfoVisible: true });
   }
 
   renderDetail = () => (
-    <Animated.View>
+    <View>
       <User
         user={this.state.userSelected}
         onPress={() => {}}
       />
-    </Animated.View>
+    </View>
   )
 
   renderList = () => (
-    <Animated.View
-      style={[
-        styles.container,
-        {
-          transform: [{
-            translateX: this.state.listProgress.interpolate({
-              inputRange: [0, 100],
-              outputRange: [0, width],
-            })
-          }]
-        },
-      ]}
-    >
-      <ScrollView
-        ref={s => this._scrollView = s}
-        scrollEventThrottle={16}
-        onScroll={Animated.event([{
-          nativeEvent: {
-            contentOffset: { y: this.state.scrollOffset }
-          }
-        }])}
-      >
+    <View style={styles.container}>
+      <ScrollView>
         { this.state.users.map(user =>
           <User
             key={user.id}
@@ -122,7 +82,7 @@ export default class App extends Component {
           />
         )}
       </ScrollView>
-    </Animated.View>
+    </View>
   )
 
   render() {
@@ -132,68 +92,16 @@ export default class App extends Component {
       <View style={styles.container}>
         <StatusBar barStyle="light-content" />
 
-        <Animated.View
-          style={[
-            styles.header,
-            {
-              height: this.state.scrollOffset.interpolate({
-                inputRange: [0, 140],
-                outputRange: [200, 70],
-                extrapolate: 'clamp',
-              })
-            },
-          ]}
-        >
-          <Animated.Image
-            style={[
-              styles.headerImage,
-              {
-                opacity: this.state.userImageProgress.interpolate({
-                  inputRange: [0, 100],
-                  outputRange: [0, 1],
-                })
-              },
-            ]}
+        <View style={styles.header}>
+          <Image
+            style={styles.headerImage}
             source={userSelected ? { uri: userSelected.thumbnail } : null}
           />
 
-          <Animated.Text
-            style={[
-              styles.headerText,
-              {
-                fontSize: this.state.scrollOffset.interpolate({
-                  inputRange: [120, 140],
-                  outputRange: [24, 16],
-                  extrapolate: 'clamp',
-                }),
-                transform: [{
-                  translateX: this.state.userImageProgress.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: [0, width],
-                  })
-                }]
-              }
-            ]}
-          >
-            GoNative
-          </Animated.Text>
-
-          <Animated.Text
-            style={[
-              styles.headerText,
-              {
-                transform: [{
-                  translateX: this.state.userImageProgress.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: [width * -1, 0],
-                  })
-                }]
-              }
-            ]}
-          >
-            { userSelected ? userSelected.name : null }
-          </Animated.Text>
-        </Animated.View>
+          <Text style={styles.headerText}>
+            { userSelected ? userSelected.name : 'GoNative' }
+          </Text>
+        </View>
 
         { this.state.userInfoVisible
           ? this.renderDetail()
@@ -212,6 +120,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 40 : 20,
     paddingHorizontal: 15,
     backgroundColor: '#2E93E5',
+    height: 200,
   },
 
   headerImage: {
